@@ -1,0 +1,75 @@
+<div class="main-content">
+    <div class="section-content section-content-p30">
+        <div class="container-fluid">
+            
+            <div class="row">
+                
+                <!-- 迭代顯示產品 -->
+                <div *ngFor = "let tempProduct of products" class="col-md-3">
+                    
+                    <div class="product-box">
+                        <!-- 加入 router link 讓產品圖片跟名稱可以對應到 ProductDetailComponent -->
+                        <a routerLink="/products/{{ tempProduct.id }}">
+                            <img src="{{ tempProduct.imageUrl }}" alt="" class="img-responsive">
+                        </a>
+                        <a routerLink="/products/{{ tempProduct.id }}">
+                            <h1>{{ tempProduct.name }}</h1>
+                        </a>
+                        <div class="price">{{ tempProduct.unitPrice | currency:'TWD' : 'symbol-narrow':'.0' }}</div>
+                        <button (click)="addToCart(tempProduct)" class="btn btn-primary btn-sm">加入購物車</button>
+                    </div>
+
+                </div>
+
+            </div>
+        
+            <!-- 找不到產品的顯示訊息 -->
+            <div *ngIf="products?.length == 0" class="alert alert-warning col-md-12" role="alert">
+                找不到產品
+            </div>
+
+            <!-- begin footer -->
+            <!-- 分頁元件 -->
+            <div class="footer-pagination">
+                <div class="row">
+                    <div class="col-md-6"></div>
+                    
+                    <div class="col-md-6">
+                        <div class="row">
+
+                            <div class="col-md-9">
+                                
+                                <ngb-pagination [(page)] = "thePageNumber"
+                                                [pageSize] = "thePageSize"
+                                                [collectionSize]= "theTotalElements"
+                                                [maxSize] = "5"
+                                                [boundaryLinks] = "true"
+                                                (pageChange) = "listProducts()">    
+                                </ngb-pagination>
+                                
+                            </div>
+
+
+                            <div class="col-md-3 mt-2" style="text-align: right;">
+                                <!-- Page Size -->
+                                <span class="mr-2">分頁大小</span>
+
+                                <select #myPageSelect (change)="updatePageSize(myPageSelect.value)" style="margin-left: 10%;">
+                                    <option>2</option>
+                                    <option selected="true">5</option>
+                                    <option>10</option>
+                                    <option>20</option>
+                                    <option>50</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- end footer -->
+
+        </div>
+    </div>
+</div>
