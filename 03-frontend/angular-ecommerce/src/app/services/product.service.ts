@@ -25,6 +25,15 @@ export class ProductService {
     return this.httpClient.get<Product>(productUrl);
   }
 
+  getProductList(theCategoryId: number): Observable<Product[]> {
+    
+    // 根據 category id 產生 URL
+    // 路徑中的 search 是 spring data rest 規範 
+    const searchUrl = `${this.baseUrl}/search/findByCategoryId?id=${theCategoryId}`;
+    
+    return this.getProducts(searchUrl);
+  }
+
   getProductListPaginate(thePage: number,
                          thePageSize: number,
                          theCategoryId: number): Observable<GetResponseProducts> {
@@ -35,15 +44,6 @@ export class ProductService {
     return  this.httpClient.get<GetResponseProducts>(searchUrl);
   }
 
-  getProductList(theCategoryId: number): Observable<Product[]> {
-    
-    // 根據 category id 產生 URL
-    // 路徑中的 search 是 spring data rest 規範 
-    const searchUrl = `${this.baseUrl}/search/findByCategoryId?id=${theCategoryId}`;
-    
-    return this.getProducts(searchUrl);
-  }
-
   searchProducts(theKeyword: string): Observable<Product[]> {
      // 根據使用者輸入關鍵字產生 URL
     const searchUrl = `${this.baseUrl}/search/findByNameContaining?name=${theKeyword}`;
@@ -52,13 +52,15 @@ export class ProductService {
   }
 
   searchProductsPaginate(thePage: number,
-                        thePageSize: number,
-                        theKeyword: string): Observable<GetResponseProducts> {
+                         thePageSize: number,
+                         theKeyword: string): Observable<GetResponseProducts> {
+
     // 根據使用者輸入 keyword, page, size 產生 URL                     
     const searchUrl = `${this.baseUrl}/search/findByNameContaining?name=${theKeyword}`
                     +  `&page=${thePage}&size=${thePageSize}`;
 
     return  this.httpClient.get<GetResponseProducts>(searchUrl);
+
   }
 
   // 發出請求取得 products

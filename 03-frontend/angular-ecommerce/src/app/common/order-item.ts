@@ -1,6 +1,7 @@
 import { CartItem } from "./cart-item";
 
 export class OrderItem {
+
     imageUrl: string;
     unitPrice: number;
     quantity: number;
@@ -12,4 +13,5 @@ export class OrderItem {
         this.quantity = cartItem.quantity;
         this.productId = cartItem.id;
     }
+    
 }

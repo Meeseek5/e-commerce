@@ -14,7 +14,22 @@ export class CartService {
   totalPrice: Subject<number> = new BehaviorSubject<number>(0);
   totalQuantity: Subject<number> = new BehaviorSubject<number>(0);
 
-  constructor() { }
+  // storage: Storage = sessionStorage;
+  storage: Storage = localStorage;
+
+  constructor() {
+
+    // 從 storage 讀取資料
+    let data = JSON.parse(this.storage.getItem('cartItems'));
+
+    if (data != null) {
+      this.cartItems = data;
+
+      // 取得 storage 中的 data 後計算 total
+      this.computeCartTotals(); 
+    }
+
+  }
 
   addToCart(theCartItem: CartItem) {
     
@@ -66,12 +81,21 @@ export class CartService {
     }
 
     // 將更新後的 value 發送給訂閱者
+    // 更新值並發送
     this.totalPrice.next(totalPriceValue);
     this.totalQuantity.next(totalQuantityValue);
 
     // log cart data for debugging purposes
     this.logCartData(totalPriceValue, totalQuantityValue);
+
+    // persist cart data - 儲存購物車內的商品
+    this.persistCartItems();
   }
+
+  persistCartItems() {
+    this.storage.setItem('cartItems', JSON.stringify(this.cartItems));
+  }
+
 
   logCartData(totalPriceValue: number, totalQuantityValue: number) {
     console.log('以下為購物車內的商品')
