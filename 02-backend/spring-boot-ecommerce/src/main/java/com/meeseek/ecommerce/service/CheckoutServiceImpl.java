@@ -43,12 +43,22 @@ public class CheckoutServiceImpl implements CheckoutService{
         order.setShippingAddress(purchase.getShippingAddress());
         order.setBillingAddress(purchase.getBillingAddress());
 
+        Customer customer = purchase.getCustomer();
+
+        //  檢查 customer 是否存在 - 從資料庫取回 customer's email
+        String theEmail = customer.getEmail();
+        Customer customerFromDB = customerRepository.findByEmail(theEmail);
+
+        // customer 已經存在
+        if (customerFromDB != null) {
+            customer = customerFromDB;
+        }
+
         // 將 order 放進 customer
-        Customer cusomer = purchase.getCustomer();
-        cusomer.add(order); // customer add order 同時 order 也 set customer，建立雙向關係
+        customer.add(order); // customer add order 同時 order 也 set customer，建立雙向關係
 
         // customer 存入 database
-        customerRepository.save(cusomer);
+        customerRepository.save(customer);
 
         // return response
         return new PurchaseResponse(orderTrackinNumber);

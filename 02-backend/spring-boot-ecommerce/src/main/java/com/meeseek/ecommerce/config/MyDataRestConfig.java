@@ -1,8 +1,10 @@
 package com.meeseek.ecommerce.config;
 
+import com.meeseek.ecommerce.dao.OrderRepository;
 import com.meeseek.ecommerce.entity.Product;
 import com.meeseek.ecommerce.entity.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -17,6 +19,10 @@ import java.util.Set;
 
 @Configuration
 public class MyDataRestConfig implements RepositoryRestConfigurer {
+
+    @Value("${allowed.origins}")
+    private String[] theAllowedOrigins;
+
     private EntityManager entityManager;
 
     @Autowired
@@ -35,8 +41,15 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
         // 拒絕 http PUT, POST, DELETE, PATCH 方法改動 ProductCategory 資料
         disableHttpMethods(ProductCategory.class, config, theUnsupportedActions);
 
+        // 拒絕 http PUT, POST, DELETE, PATCH 方法改動 OrderRepository 資料
+        disableHttpMethods(OrderRepository.class, config, theUnsupportedActions);
+
         // 呼叫公開 entity id 方法
         exposeIds(config);
+
+        // configure cors mapping
+        // "/api" -> config.getBasePath()
+        cors.addMapping(config.getBasePath() + "/**").allowedOrigins(theAllowedOrigins);
     }
 
     private void disableHttpMethods(Class theClass, RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
@@ -47,6 +60,7 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
     }
 
     private void exposeIds(RepositoryRestConfiguration config) {
+
         // 從 entity manager 得到 entities
         Set<EntityType<?>> entities = entityManager.getMetamodel().getEntities();
 
@@ -57,7 +71,6 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
         for(EntityType tempEntityType: entities) {
             entityClasses.add(tempEntityType.getJavaType());
         }
-
 
         Class[] domainTypes = entityClasses.toArray(new Class[0]); // new Class[0] -> 相比 list.size() 有效率
         config.exposeIdsFor(domainTypes);
