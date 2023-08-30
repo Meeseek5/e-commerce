@@ -1,1 +1,41 @@
-<p>order-history works!</p>
+<div class="main-content">
+    <div class="section-content section-content-p30">
+        <div class="container-fluid">
+            <h3>訂單紀錄</h3>
+            
+            <div *ngIf="orderHistoryList.length > 0">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="20%">訂單編號</th>
+                        <th width="10%">總價格</th>
+                        <th width="10%">總數量</th>
+                        <th width="10%">日期</th>
+                    </tr>
+
+                    <tr *ngFor="let tempOrderHistory of orderHistoryList">
+                        <td>
+                            {{ tempOrderHistory.orderTrackingNumber }}
+                        </td>
+                        <td>
+                            {{ tempOrderHistory.totalPrice | currency:'TWD' : 'symbol-narrow':'.0' }}
+                        </td>
+                        <td>
+                            {{ tempOrderHistory.totalQuantity }}
+                        </td>
+                        <td>
+                            {{ tempOrderHistory.dateCreated | date: 'yyyy/MM/dd HH:mm:ss' }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- 若沒有訂單記錄，顯示訊息 -->
+            <div *ngIf="orderHistoryList.length == 0" class="alert alert-warning col-md-12" role="alert">
+                查無訂單
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

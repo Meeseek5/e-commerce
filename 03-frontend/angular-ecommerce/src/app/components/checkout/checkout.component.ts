@@ -26,6 +26,8 @@ export class CheckoutComponent implements OnInit {
   creditCardYears: number[] = [];
   creditCardMonths: number[] = [];
   
+  storage: Storage =  sessionStorage;
+
   constructor(private formBuilder: FormBuilder,
               private utilFormService: UtilFormService,
               private cartService: CartService,
@@ -36,15 +38,18 @@ export class CheckoutComponent implements OnInit {
 
     this.reviewCartDetails();
 
+    // 讀取 session storage 的 user's email
+    const theEmail = JSON.parse(this.storage.getItem('userEmail'));
+
     this.checkoutFormGroup = this.formBuilder.group({
       customer: this.formBuilder.group({
         name: new FormControl('',
                             [Validators.required,
                              Validators.minLength(2),
                              CustomValidators.notOnlyWhitespace]),
-        email: new FormControl('',
+        email: new FormControl(theEmail,
                             [Validators.required, 
-                             Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$'),
+                             Validators.pattern('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[a-z]{2,4}$'),
                              CustomValidators.notOnlyWhitespace]),
         shippingAddress: new FormControl('',
                             [Validators.required, 

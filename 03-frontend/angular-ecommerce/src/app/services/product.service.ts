@@ -3,20 +3,18 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { Product } from '../common/product';
 import { ProductCategory } from '../common/product-category';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   
-  private baseUrl = 'http://localhost:8080/api/products';
-  
-  private categoryUrl = 'http://localhost:8080/api/product-category';
+  private baseUrl =  environment.ecommerceApiUrl + '/products'; 
+  private categoryUrl = environment.ecommerceApiUrl + '/product-category';
 
-  
   constructor(private httpClient: HttpClient) { }
   
-
   // 取得單一 product
   // 用在單一商品介紹
   getProduct(theProductId: number): Observable<Product> {
@@ -41,6 +39,9 @@ export class ProductService {
     const searchUrl = `${this.baseUrl}/search/findByCategoryId?id=${theCategoryId}`
                     +  `&page=${thePage}&size=${thePageSize}`;
 
+              
+    console.log(`Getting from products - ${searchUrl}`);
+    
     return  this.httpClient.get<GetResponseProducts>(searchUrl);
   }
 
