@@ -9,10 +9,10 @@
                     
                     <div class="product-box">
                         <!-- 加入 router link 讓產品圖片跟名稱可以對應到 ProductDetailComponent -->
-                        <a routerLink="/products/{{ tempProduct.id }}">
+                        <a routerLink="/products/{{ tempProduct.id }}/{{ currentCategoryId }}">
                             <img src="{{ tempProduct.imageUrl }}" alt="" class="img-responsive">
                         </a>
-                        <a routerLink="/products/{{ tempProduct.id }}">
+                        <a routerLink="/products/{{ tempProduct.id }}/{{ currentCategoryId }}">
                             <h1>{{ tempProduct.name }}</h1>
                         </a>
                         <div class="price">{{ tempProduct.unitPrice | currency:'TWD' : 'symbol-narrow':'.0' }}</div>

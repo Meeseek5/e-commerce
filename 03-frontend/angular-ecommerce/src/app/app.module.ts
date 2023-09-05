@@ -59,6 +59,7 @@ const routes: Routes = [
   {path: 'checkout', component: CheckoutComponent},
   {path: 'cart-details', component: CartDetailsComponent},
   {path: 'products/:id', component: ProductDetailsComponent},
+  {path: 'products/:prodId/:catId', component: ProductDetailsComponent}, // 追蹤上一頁的 category id
   {path: 'search/:keyword', component: ProductListComponent},
   {path: 'category/:id', component: ProductListComponent},
   {path: 'category', component: ProductListComponent},

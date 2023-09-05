@@ -89,6 +89,7 @@ export class CartService {
     this.logCartData(totalPriceValue, totalQuantityValue);
 
     // persist cart data - 儲存購物車內的商品
+    // 確保重新整理頁面後購物車商品不會消失
     this.persistCartItems();
   }
 

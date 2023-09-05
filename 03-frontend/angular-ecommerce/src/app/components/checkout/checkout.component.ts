@@ -6,11 +6,13 @@ import { Address } from 'src/app/common/address';
 import { Customer } from 'src/app/common/customer';
 import { Order } from 'src/app/common/order';
 import { OrderItem } from 'src/app/common/order-item';
+import { PaymentInfo } from 'src/app/common/payment-info';
 import { Purchase } from 'src/app/common/purchase';
 import { CartService } from 'src/app/services/cart.service';
 import { CheckoutService } from 'src/app/services/checkout.service';
 import { UtilFormService } from 'src/app/services/util-form.service';
 import { CustomValidators } from 'src/app/validators/custom-validators';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-checkout',
@@ -28,6 +30,15 @@ export class CheckoutComponent implements OnInit {
   
   storage: Storage =  sessionStorage;
 
+  // 初始化 Stripe API
+  stripe = Stripe(environment.stripePublishableKey);
+
+  paymentInfo: PaymentInfo = new PaymentInfo();
+  cardElement: any;
+  displayError: any = "";
+
+  isDisabled: boolean = false;
+
   constructor(private formBuilder: FormBuilder,
               private utilFormService: UtilFormService,
               private cartService: CartService,
@@ -35,6 +46,9 @@ export class CheckoutComponent implements OnInit {
               private router: Router) { }
 
   ngOnInit(): void {
+
+    // 設置 Stripe 表單
+    this.setupStripePaymentForm();
 
     this.reviewCartDetails();
 
@@ -61,6 +75,7 @@ export class CheckoutComponent implements OnInit {
                              CustomValidators.notOnlyWhitespace]),
       }),
       creditCard: this.formBuilder.group({
+        /*
         cardType: new FormControl('',[Validators.required]),
         nameOnCard: new FormControl('', [Validators.required, Validators.minLength(2),
                                          CustomValidators.notOnlyWhitespace]),
@@ -68,10 +83,14 @@ export class CheckoutComponent implements OnInit {
         securityCode: new FormControl('',[Validators.required, Validators.pattern('[0-9]{3}')]),
         expirationMonth: [''],
         expirationYear: ['']
+        */
       })
     });
 
+
+    /*
     // pupulate credit card months
+
     const startMonth: number = new Date().getMonth() + 1;
     this.utilFormService.getCreditCardMonths(startMonth).subscribe(
       data => {
@@ -81,11 +100,39 @@ export class CheckoutComponent implements OnInit {
     );
       
     // pupulate credit card years
+    
     this.utilFormService.getCreditCarYears().subscribe(
       data => {
         this.creditCardYears = data;
       }
     );
+    */
+
+    // end of ngOnInit
+  }
+
+  setupStripePaymentForm() {
+    // 取得 Stripe Elements
+    var elements = this.stripe.elements();
+
+    // 創建一個 card element，並隱藏郵政編碼欄位
+    this.cardElement = elements.create('card', {hidePostalCode: true});
+
+    // 將 card UI 元件的實例加入到 'card-element' 的 div 元素中
+    this.cardElement.mount('#card-element');
+
+    // 為 card element 的 'change' 事件添加事件綁定
+    this.cardElement.on('change', (event: any) => {
+      // 取得 card-errors element
+      this.displayError = document.getElementById('card-errors');
+
+      if (event.complete) {
+        this.displayError.textContent = '';
+      } else if (event.error) {
+        // 顯示錯誤訊息給使用者
+        this.displayError.textContent = event.error.message;
+      }
+    });
   }
 
   reviewCartDetails() {
@@ -183,23 +230,92 @@ export class CheckoutComponent implements OnInit {
     // populate purchase - order and orderItems
     purchase.order = order;
     purchase.orderItems = orderItems;
-
+    
     // purchase JSON
     console.log(JSON.stringify(purchase))
 
-    // call REST API
-    this.checkoutService.placeOrder(purchase).subscribe({
-        next: response => {
-          alert(`已收到訂單！\n訂單編號為: ${response.orderTrackingNumber}`);
+    // 計算 payment info
+    this.paymentInfo.amount = this.totalPrice * 100;
+    this.paymentInfo.currency = "twd";
+    this.paymentInfo.receiptEmail = purchase.customer.email;
 
-          // reset cart
-          this.resetCart();          
-        },
-        error: err => {
-          alert(`錯誤發生: ${err.message}`);
+    console.log(`paymentInfo amount: ${this.paymentInfo.amount}`);
+
+    // if valid form then
+    // - create payment form
+    // - confirm card payment
+    // - place order
+    
+    if (!this.checkoutFormGroup.invalid && this.displayError.textContent === "") {
+      
+      this.isDisabled = true;
+
+      this.checkoutService.createPaymentIntent(this.paymentInfo).subscribe(
+        (paymentIntentResponse) => {
+          this.stripe.confirmCardPayment(paymentIntentResponse.client_secret,
+            {
+              payment_method: {
+                card: this.cardElement,
+                billing_details: {
+                  email: purchase.customer.email,
+                  name: purchase.customer.name,
+                  address: {
+                    city: purchase.billingAddress.city,
+                    state: purchase.billingAddress.district
+                  }
+                }
+              }
+            },{ handleActions: false })
+          .then((result: any) => {
+            if (result.error) {
+              // Show error to customer
+              alert(`發生錯誤: ${result.error.message}`);
+              this.isDisabled = false;
+            } else {
+              // call REST API via CheckoutService
+              this.checkoutService.placeOrder(purchase).subscribe({
+                next: (response: any) => {
+                  alert(`已收到訂單！\n訂單編號為: ${response.orderTrackingNumber}`);
+                  
+                  // reset cart
+                  this.resetCart();
+                  this.isDisabled = false;
+                },
+                error: (error: any) => {
+                  alert(`發生錯誤: ${error.message}`)
+                  this.isDisabled = false;
+                }
+              });
+            }
+          })
         }
-      }
-    );
+      );
+    } else {
+      this.checkoutFormGroup.markAllAsTouched();
+      return;
+    }
+
+
+    // 舊的 訂單 API call
+    // call REST API via chekoutService
+    // this.checkoutService.placeOrder(purchase).subscribe({
+    //     next: response => {
+    //       alert(`已收到訂單！\n訂單編號為: ${response.orderTrackingNumber}`);
+
+    //       // reset cart
+    //       this.resetCart();          
+    //     },
+    //     error: err => {
+    //       alert(`錯誤發生: ${err.message}`);
+    //     }
+    //   }
+    // );
+
+
+
+    /**
+     * 使用不同方式存取表單元素
+     */
 
     // console.log(this.checkoutFormGroup.get('customer').value)
     // console.log(this.checkoutFormGroup.controls['customer'].value)
@@ -216,6 +332,9 @@ export class CheckoutComponent implements OnInit {
     this.cartService.cartItems = [];
     this.cartService.totalPrice.next(0);
     this.cartService.totalQuantity.next(0);
+    
+    // 清空購物車的同時 session storage 儲存的 cartItems 也要清空
+    this.cartService.persistCartItems();
 
     // reset form
     this.checkoutFormGroup.reset();
