@@ -63,7 +63,10 @@
                                 <p>運費：$0</p>
                                 <p>總金額：{{ totalPrice | currency:'TWD' : 'symbol-narrow':'.0' }}</p>
                                 <div>
-                                    <a routerLink="/checkout" class="btn btn-primary">結帳</a>
+                                    <a *ngIf="isAuthenticated" routerLink="/checkout" class="btn btn-primary">結帳</a>
+                                </div>
+                                <div>
+                                    <a *ngIf="!isAuthenticated" routerLink="/login" class="btn btn-primary">登入</a>
                                 </div>
                             </td>
                         </tr>
