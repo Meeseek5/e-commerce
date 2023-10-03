@@ -6,6 +6,8 @@ import com.meeseek.ecommerce.dto.PurchaseResponse;
 import com.meeseek.ecommerce.service.CheckoutService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.logging.Logger;
 @CrossOrigin("http://localhost:4200")
 @RestController
 @RequestMapping("/api/checkout")
+@Tag(name = "checkout API - 付款 API")
 public class CheckoutController {
     private CheckoutService checkoutService;
 
@@ -24,12 +27,17 @@ public class CheckoutController {
         this.checkoutService = checkoutService;
     }
 
+    @Operation(summary = "建立訂單")
     @PostMapping("/purchase")
     public PurchaseResponse placeOrder(@RequestBody Purchase purchase) {
+
+        logger.info("purchase: " + purchase);
+
         PurchaseResponse purchaseResponse = checkoutService.placeOrder(purchase);
         return  purchaseResponse;
     }
 
+    @Operation(summary = "傳送付款資訊")
     @PostMapping("/payment-intent")
     public ResponseEntity<String> createPaymentIntent(@RequestBody PaymentInfo paymentInfo) throws StripeException {
 

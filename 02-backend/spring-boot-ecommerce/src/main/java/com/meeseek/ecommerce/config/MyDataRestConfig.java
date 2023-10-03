@@ -1,6 +1,7 @@
 package com.meeseek.ecommerce.config;
 
 import com.meeseek.ecommerce.dao.OrderRepository;
+import com.meeseek.ecommerce.entity.Order;
 import com.meeseek.ecommerce.entity.Product;
 import com.meeseek.ecommerce.entity.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
         disableHttpMethods(ProductCategory.class, config, theUnsupportedActions);
 
         // 拒絕 http PUT, POST, DELETE, PATCH 方法改動 OrderRepository 資料
-        disableHttpMethods(OrderRepository.class, config, theUnsupportedActions);
+        disableHttpMethods(Order.class, config, theUnsupportedActions);
 
         // 呼叫公開 entity id 方法
         exposeIds(config);

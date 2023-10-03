@@ -9,18 +9,17 @@ import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 
 @Configuration
-public class SecurityConfiguration {
+public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
 
         // protect endpoint /api/orders
         http.authorizeHttpRequests(configurer ->
-                            configurer
-                                    .antMatchers("/api/orders/**")
+                            configurer.antMatchers("/api/orders/**")
                                     .authenticated())
-                .oauth2ResourceServer()
-                .jwt();
+                                    .oauth2ResourceServer()
+                                    .jwt();
 
         // add CORS filters
         http.cors();
@@ -33,7 +32,7 @@ public class SecurityConfiguration {
         // 來自 okta spring security
         Okta.configureResourceServer401ResponseBody(http);
 
-        // 取消 CSRF - 預設是開啟的
+        // 取消 CSRF -> 預設是開啟的
         // 因為 app 沒有使用 cookie 做 session tracking
         http.csrf().disable();
 

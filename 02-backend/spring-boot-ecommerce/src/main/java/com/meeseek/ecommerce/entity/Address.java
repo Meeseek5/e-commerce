@@ -1,5 +1,6 @@
 package com.meeseek.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,7 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @JsonIgnore
     private Long id;
 
     @Column(name = "city")
@@ -26,5 +28,6 @@ public class Address {
 
     @OneToOne
     @PrimaryKeyJoinColumn
+    @JsonIgnore
     private Order order;
 }
